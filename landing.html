@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Start Task</title>
+    <link rel="stylesheet" type="text/css" href="questionnaires.css"> 
+    <style>
+        /* Use the base font */
+        body {
+            font-family: 'Source Sans Pro', sans-serif;
+            background-color: #efefef;
+            color: #303030;
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            flex-direction: column; 
+        }
+        /* Style the container like the questionnaire form */
+        .form-container {
+            max-width: 500px; /* Slightly narrower */
+            padding: 30px;
+            border: 1px solid rgba(48, 48, 48, 0.15);
+            border-radius: 8px; 
+            background-color: #ffffff; /* White background */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Add subtle shadow */
+            text-align: center; /* Center title */
+        }
+        /* Style the title */
+        .form-container h2 {
+            font-size: 35px; /* Slightly smaller than form__title */
+            margin-bottom: 30px;
+            color: #303030;
+        }
+        /* Style form elements */
+        .form-container div {
+            margin-bottom: 20px; /* Add space between fields */
+            text-align: left; /* Align labels left */
+        }
+        .form-container label {
+            display: block; 
+            margin-bottom: 8px; 
+            font-size: 18px; /* Smaller font size */
+            font-weight: 600; /* Make labels bolder */
+            color: #555;
+        }
+        .form-container input[type="text"],
+        .form-container select {
+            width: 100%; /* Full width within container */
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; /* Include padding in width */
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Enter Details</h2>
+        <form id="startForm">
+            <div>
+                <label for="subjectId">Subject ID:</label>
+                <input type="text" id="subjectId" name="subjectId" required>
+            </div>
+            <div>
+                <label for="sessionId">Session ID:</label>
+                <select id="sessionId" name="sessionId" required>
+                    <option value="" disabled selected>Select Session</option> <!-- Add placeholder -->
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                </select>
+            </div>
+            <!-- Use the existing button style from questionnaires.css -->
+            <button type="submit" class="submit_button">Start Task</button> 
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('startForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            const subjectId = document.getElementById('subjectId').value;
+            const sessionId = document.getElementById('sessionId').value;
+
+            // Construct the URL for index.html with query parameters
+            const targetUrl = `index.html?PROLIFIC_PID=${encodeURIComponent(subjectId)}&SESSION_ID=${encodeURIComponent(sessionId)}`;
+
+            // Redirect to index.html
+            window.location.href = targetUrl;
+        });
+    </script>
+</body>
+</html>
