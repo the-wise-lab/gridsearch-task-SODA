@@ -1,0 +1,63 @@
+ <!DOCTYPE html>
+ <html>
+     <head>
+         <title>Fishing game</title>
+         <meta charset="utf-8">
+         <link href="src/task.css" rel="stylesheet" type="text/css"></link>
+     </head>
+     <body> 
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+        <!-- <script src="https://browser.sentry-cdn.com/4.4.1/bundle.min.js" crossorigin="anonymous"></script> -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/random-js/1.0.8/random.min.js"></script>
+        <script src="src/prob.js/prob.js"></script>
+
+        <script src=" "></script>
+        <script src=" "></script>
+        <script src=" "></script>
+        <script>
+            // Your web app's Firebase configuration (details removed for privacy reasons)
+            var firebaseConfig = {
+              apiKey: " ",
+              authDomain: " ",
+              projectId: " ",
+              storageBucket: " ",
+              messagingSenderId: " ",
+              appId: " "
+            };
+            // Initialize Firebase
+            // firebase.initializeApp(firebaseConfig);
+        </script>
+        <script type="module" src="src/index.js" charset="utf-8"></script>
+        <div class="instructions" id='instructions'></div>
+        <div class="div" id="mainSection">
+            <header class="form__header" id="header"><h2 id="header_title" class="form__title"></h2></header>
+            <section class="mainInstructions" id="consent"></section>
+            <div class='krakenPresent' id='krakenPresent'></div>
+        
+        <div id = 'bonusRoundDiv' class='div' style='display:none; margin-left: 100px' >
+            <h2> How many fish are at this location? </h2>
+            
+            <input id='estimateSlider' class="input-range" type="range" value="50" min="0" max="100" step="1" style="width: 300px">
+            
+            <output class="score" id="output">50 fish</output><br><br>
+            <h2> How confident are you? </h2> 
+            
+            <input id='confidenceSlider' class="input-range" type="range" value="6" min="1" max="11" step="1" style="width: 300px;">
+            <br><br><br>
+            <div class="score" style = "padding-bottom: 0px; margin-bottom: 3px">
+                Least confident <span class="spacer" style="width: 100px; display: inline-block;"></span> Most confident
+            </div>
+            
+            
+        </div>
+        <div id=quizContainer style="display: none;">
+            <div id="quiz" style="display: none;" class = "form"></div>
+        <div id=submitContainer style="display: none;">
+            <button type="button" name="button" id = "submitComp" class = "compButton" style = 'display: none;'>Submit</button> 
+         </div>
+        </div>
+    </div>  
+     </body>
+
+     
+ </html>
