@@ -72,6 +72,10 @@
                     <option value="3">3</option>
                 </select>
             </div>
+            <div style="text-align: left; margin-bottom: 20px;"> <!-- Added div for checkbox -->
+                <input type="checkbox" id="skipInstructions" name="skipInstructions" style="width: auto; margin-right: 5px;"> <!-- Added checkbox -->
+                <label for="skipInstructions" style="display: inline; font-weight: normal;">Skip Instructions</label> <!-- Adjusted label style -->
+            </div>
             <!-- Use the existing button style from questionnaires.css -->
             <button type="submit" class="submit_button">Start Task</button> 
         </form>
@@ -83,9 +87,15 @@
 
             const subjectId = document.getElementById('subjectId').value;
             const sessionId = document.getElementById('sessionId').value;
+            const skipInstructions = document.getElementById('skipInstructions').checked; // Get checkbox state
 
             // Construct the URL for index.html with query parameters
-            const targetUrl = `index.html?PROLIFIC_PID=${encodeURIComponent(subjectId)}&SESSION_ID=${encodeURIComponent(sessionId)}`;
+            let targetUrl = `index.html?PROLIFIC_PID=${encodeURIComponent(subjectId)}&SESSION_ID=${encodeURIComponent(sessionId)}`;
+
+            // Add skipInstructions parameter if checked
+            if (skipInstructions) {
+                targetUrl += `&skipInstructions=true`;
+            }
 
             // Redirect to index.html
             window.location.href = targetUrl;
