@@ -29,6 +29,7 @@ var subjectID
 var studyID
 var sessionID
 var uid;
+var skipInstructions; // Added to store skipInstructions parameter
 
 var startTask = function() {
 
@@ -57,8 +58,16 @@ var startTask = function() {
     // Generate a simple UID for now if needed
     uid = 'user-' + Math.random().toString(36).substring(2, 15);
 
+    // Get skipInstructions from URL
+    skipInstructions = getQueryVariable('skipInstructions');
+
     // Construct the next page URL directly
     nextPage = "game.html?" + "PROLIFIC_PID=" + subjectID + '&UID=' + uid + '&STUDY=' + studyID + '&SESSION_ID=' + sessionID;
+
+    // Append skipInstructions to nextPage if it exists
+    if (skipInstructions !== false) {
+        nextPage += '&skipInstructions=' + skipInstructions;
+    }
 
     // Redirect immediately
     window.location.href = nextPage;

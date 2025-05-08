@@ -93,11 +93,13 @@
             let targetUrl = `index.html?PROLIFIC_PID=${encodeURIComponent(subjectId)}&SESSION_ID=${encodeURIComponent(sessionId)}`;
 
             // Add skipInstructions parameter if checked
+            console.log(`Skip Instructions: ${skipInstructions}`); // Debugging line
             if (skipInstructions) {
                 targetUrl += `&skipInstructions=true`;
             }
 
             // Redirect to index.html
+            console.log(`Redirecting to: ${targetUrl}`); // Debugging line
             window.location.href = targetUrl;
         });
     </script>
