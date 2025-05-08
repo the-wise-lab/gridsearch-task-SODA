@@ -30,6 +30,11 @@ var studyID
 var sessionID
 var uid;
 var skipInstructions; // Added to store skipInstructions parameter
+// API parameters
+var apiURL;
+var apiPort;
+var apiEndpoint;
+var writeMode;
 
 var startTask = function() {
 
@@ -60,6 +65,12 @@ var startTask = function() {
 
     // Get skipInstructions from URL
     skipInstructions = getQueryVariable('skipInstructions');
+    
+    // Get API parameters
+    apiURL = getQueryVariable('apiURL');
+    apiPort = getQueryVariable('apiPort');
+    apiEndpoint = getQueryVariable('apiEndpoint');
+    writeMode = getQueryVariable('writeMode');
 
     // Construct the next page URL directly
     nextPage = "game.html?" + "PROLIFIC_PID=" + subjectID + '&UID=' + uid + '&STUDY=' + studyID + '&SESSION_ID=' + sessionID;
@@ -68,10 +79,23 @@ var startTask = function() {
     if (skipInstructions !== false) {
         nextPage += '&skipInstructions=' + skipInstructions;
     }
+    
+    // Add API parameters to the URL if they exist
+    if (apiURL !== false) {
+        nextPage += '&apiURL=' + apiURL;
+    }
+    if (apiPort !== false) {
+        nextPage += '&apiPort=' + apiPort;
+    }
+    if (apiEndpoint !== false) {
+        nextPage += '&apiEndpoint=' + apiEndpoint;
+    }
+    if (writeMode !== false) {
+        nextPage += '&writeMode=' + writeMode;
+    }
 
     // Redirect immediately
     window.location.href = nextPage;
-
 }
 
 startTask();

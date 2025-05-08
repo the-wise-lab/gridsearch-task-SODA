@@ -14,6 +14,13 @@ var newBlock,
     button;
 var arrow; // Define arrow at global scope so it's accessible everywhere
 
+// Variables for the server API
+var apiURL;
+var apiPort;
+var apiEndpoint;
+var writeMode = 'overwrite'; // Default write mode
+var taskName = 'gridsearch-task'; // Name of this task
+
 // Initialize variable values
 var scoreNumber = 0;
 var startingSet = false;
@@ -65,6 +72,7 @@ var db; // this will be the database reference
 var docRef; // this is the reference to the specific document within the database that we're saving to
 var subjectID;
 var studyID;
+var sessionID = 'none'; // Default session ID
 
 // Preload images
 // https://stackoverflow.com/questions/3646036/preloading-images-with-javascript
@@ -85,29 +93,132 @@ var img_urls = [
 
 img_urls.forEach((i) => preloadImage(i)); // KW: loops over img_urls and preloads everything
 
-// This function puts everything in the 'data' object and saves it to firebase
-function saveDataFirebase() {
-    data["blocks"] = blocks;
-    data["krakenFound"] = krakenFound;
-    data["bonusPayment"] = bonusPayment * 0.72; // transfer it into pounds before saving bc that is how it will be entered in prolific
+// This function puts everything in the 'data' object and saves it to a server
+function saveData() {
+    // Create the array that will hold our data
+    let dataArray = [];
+    
+    // Get shared data that will be included in all entries
+    const commonData = {
+      "block": blocks[blocks.length - 1],
+      "krakenFound": krakenFound[krakenFound.length - 1],
+      "bonusPayment": bonusPayment * 0.72,
+      "taskRT": totalTimeTask,
+      "comprehensionAttempts": comprehensionAttempts
+    };
+    
+    // Parse searchHistory to ensure it's not a JSON string
+    let searchHistoryData = typeof searchHistory === 'string' ? 
+        JSON.parse(searchHistory) : searchHistory;
+    
+    console.log("Processing searchHistory data:", searchHistoryData);
 
-    // Firebase doesn't supported nested arrays - it would be possible to rework this
-    // to save the data in a more firebase-friendly way, but just converting to a JSON
-    // string is easier
-    data["searchHistory"] = JSON.stringify(searchHistory);
-    data["bonusRound"] = JSON.stringify(bonusCollect);
+    // Handle searchHistory entries - properly handling the nested structure
+    if (searchHistoryData && searchHistoryData.xcollect && searchHistoryData.xcollect.length > 0) {
+        // Outer loop: iterate through blocks
+        for (let blockIdx = 0; blockIdx < searchHistoryData.xcollect.length; blockIdx++) {
+            const blockX = searchHistoryData.xcollect[blockIdx];
+            const blockY = searchHistoryData.ycollect[blockIdx];
+            const blockZ = searchHistoryData.zcollect[blockIdx];
+            
+            // Inner loop: iterate through trials within each block
+            for (let trialIdx = 0; trialIdx < blockX.length; trialIdx++) {
+                dataArray.push({
+                    ...commonData,
+                    type: "searchHistory",
+                    blockIndex: blockIdx,
+                    trialIndex: trialIdx,
+                    x: blockX[trialIdx],
+                    y: blockY[trialIdx],
+                    z: blockZ[trialIdx],
+                    bonusStimuli: null,
+                });
+            }
+        }
+    }
+    
+    // Handle bonusCollect entries
+    if (bonusCollect && bonusCollect.bonusStimuli && bonusCollect.bonusStimuli.length > 0) {
+        // Each entry in bonusStimuli gets its own entry in dataArray
+        for (let i = 0; i < bonusCollect.bonusStimuli.length; i++) {
+            dataArray.push({
+                ...commonData,
+                type: "bonusStimuli", 
+                blockIndex: null,
+                trialIndex: i,
+                x: bonusCollect.bonusStimuli[i].x,
+                y: bonusCollect.bonusStimuli[i].y,
+                z: bonusCollect.bonusStimuli[i].z,
+                givenValue: bonusCollect.bonusStimuli[i].givenValue,
+                howCertain: bonusCollect.bonusStimuli[i].howCertain,
+            });
+        }
+    }
+    
+    // If there's no data in either searchHistory or bonusCollect, add at least one entry with null values
+    if (dataArray.length === 0) {
+        dataArray.push({
+            ...commonData,
+            type: "empty",
+            blockIndex: null,
+            trialIndex: null,
+            x: null,
+            y: null,
+            z: null,
+            bonusStimuli: null,
+        });
+    }
 
-    data["page1RT"] = page1;
-    data["page2RT"] = page2;
-    data["page3RT"] = page3;
-    data["page4RT"] = page4;
-    data["page5RT"] = page5;
-    data["page6RT"] = page6;
-    data["taskRT"] = totalTimeTask;
-    data["comprehensionAttempts"] = comprehensionAttempts;
+    // Format the data for the API request
+    const requestData = {
+        task: taskName,
+        id: subjectID || 'default_id',
+        session: sessionID,
+        write_mode: writeMode,
+        data: dataArray // Now data is an array of entries
+    };
 
-    // Data can be saved to firebase as an object without needing to convert to a JSON string
-    // docRef.update(data);
+    console.log('Data to be sent to server:', requestData);
+
+    // If we have API info, save to the server
+    if (apiURL) {
+        // Construct the complete URL - fixing the URL construction
+        const fullApiUrl = `http://${apiURL}${apiPort ? `:${apiPort}` : ''}${apiEndpoint.startsWith('/') ? apiEndpoint : `/${apiEndpoint}`}`;
+        console.log(`Attempting to save data to: ${fullApiUrl}`);
+
+        // Make the POST request to the API endpoint
+        return fetch(fullApiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestData),
+        })
+        .then(response => {
+            if (!response.ok) {
+                // Try to parse the error response body for more details
+                return response.text().then(text => {
+                    console.error(`HTTP error! Status: ${response.status}, Body: ${text}`);
+                    return false; // Return false to indicate failure
+                });
+            }
+            return response.json();
+        })
+        .then(responseData => {
+            if (responseData) {
+                console.log('Data successfully saved to API:', responseData);
+                return true; // Return true to indicate success
+            }
+            return false;
+        })
+        .catch(error => {
+            console.error('Error saving data to API:', error);
+            return false; // Return false to indicate failure
+        });
+    } else {
+        console.log('No API URL provided, data not saved to server');
+        return Promise.resolve(false); // Return a resolved promise with false to maintain consistency
+    }
 }
 
 function getQueryVariable(variable) {
@@ -402,7 +513,7 @@ var createGrid = function (
                         // Variables to save:
                         //JSON.stringify(searchHistory)
                         // totalScore
-                        saveDataFirebase();
+                        saveData();
 
                         setTimeout(function () {
                             //KW: say end of block and create continue button after 1.5s
@@ -461,7 +572,7 @@ var createGrid = function (
                             // Variables to save:
                             // JSON.stringify(searchHistory)
                             // totalScore
-                            saveDataFirebase();
+                            saveData();
 
                             setTimeout(function () {
                                 if (currentBlock == 1) {
@@ -628,7 +739,7 @@ function createOkButton() {
                 totalTimeTask = (taskEnd - taskStart) / 60000;
 
                 // !! SAVE DATA HERE !! //
-                saveDataFirebase();
+                saveData();
 
                 // what do we want to save?
                 // - for each block: kraken present? (blocks var), kraken found?
@@ -1056,6 +1167,28 @@ var init = function () {
     if (window.location.search.indexOf("UID") > -1) {
         uid = getQueryVariable("UID");
     }
+    
+    // Get API parameters from URL
+    if (window.location.search.indexOf("apiURL") > -1) {
+        apiURL = getQueryVariable("apiURL");
+    }
+    if (window.location.search.indexOf("apiPort") > -1) {
+        apiPort = getQueryVariable("apiPort");
+    }
+    if (window.location.search.indexOf("apiEndpoint") > -1) {
+        apiEndpoint = getQueryVariable("apiEndpoint");
+    }
+    if (window.location.search.indexOf("writeMode") > -1) {
+        writeMode = getQueryVariable("writeMode");
+    }
+    
+    // Fix sessionID retrieval
+    if (window.location.search.indexOf("SESSION_ID") > -1) {
+        sessionID = getQueryVariable("SESSION_ID");
+    } else {
+        sessionID = "default_session"; // Fallback if not provided
+    }
+    
     var skipInstructions = getQueryVariable("skipInstructions") === "true";
 
     var start = Number(new Date());
@@ -1570,7 +1703,7 @@ var createBonusGrid = function (number, size, numbergrid) {
                     // Variables to save:
                     // JSON.stringify(searchHistory)
                     // totalScore
-                    saveDataFirebase();
+                    saveData();
 
                     setTimeout(function () {
                         //KW: say end of block and create continue button after 1.5s
@@ -1983,7 +2116,7 @@ function startBonusRound(totalBonusRounds) {
                             // Variables to save:
                             // JSON.stringify(searchHistory)
                             // totalScore
-                            saveDataFirebase();
+                            saveData();
 
                             setTimeout(function () {
                                 //KW: say end of block and create continue button after 1.5s

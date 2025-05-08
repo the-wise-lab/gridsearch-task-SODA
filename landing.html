@@ -53,6 +53,15 @@
             box-sizing: border-box; /* Include padding in width */
             font-size: 16px;
         }
+        /* Section headers */
+        .section-header {
+            font-size: 22px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #444;
+        }
     </style>
 </head>
 <body>
@@ -72,7 +81,31 @@
                     <option value="3">3</option>
                 </select>
             </div>
-            <div style="text-align: left; margin-bottom: 20px;"> <!-- Added div for checkbox -->
+            
+            <!-- API Configuration Section - now visible by default -->
+            <div class="section-header">Data Saving Configuration</div>
+            
+            <div>
+                <label for="apiURL">API URL:</label>
+                <input type="text" id="apiURL" name="apiURL" placeholder="e.g., 127.0.0.1" value="127.0.0.1">
+            </div>
+            <div>
+                <label for="apiPort">API Port:</label>
+                <input type="text" id="apiPort" name="apiPort" placeholder="e.g., 5000" value="5000">
+            </div>
+            <div>
+                <label for="apiEndpoint">API Endpoint:</label>
+                <input type="text" id="apiEndpoint" name="apiEndpoint" placeholder="e.g., /submit_data" value="/submit_data">
+            </div>
+            <div>
+                <label for="writeMode">Write Mode:</label>
+                <select id="writeMode" name="writeMode">
+                    <option value="overwrite" selected>Overwrite</option>
+                    <option value="append">Append</option>
+                </select>
+            </div>
+
+            <div style="text-align: left; margin-bottom: 20px; margin-top: 30px;"> <!-- Added div for checkbox -->
                 <input type="checkbox" id="skipInstructions" name="skipInstructions" style="width: auto; margin-right: 5px;"> <!-- Added checkbox -->
                 <label for="skipInstructions" style="display: inline; font-weight: normal;">Skip Instructions</label> <!-- Adjusted label style -->
             </div>
@@ -88,14 +121,33 @@
             const subjectId = document.getElementById('subjectId').value;
             const sessionId = document.getElementById('sessionId').value;
             const skipInstructions = document.getElementById('skipInstructions').checked; // Get checkbox state
-
+            
+            // Get API configuration
+            const apiURL = encodeURIComponent(document.getElementById('apiURL').value);
+            const apiPort = encodeURIComponent(document.getElementById('apiPort').value);
+            const apiEndpoint = encodeURIComponent(document.getElementById('apiEndpoint').value);
+            const writeMode = encodeURIComponent(document.getElementById('writeMode').value);
+            
             // Construct the URL for index.html with query parameters
             let targetUrl = `index.html?PROLIFIC_PID=${encodeURIComponent(subjectId)}&SESSION_ID=${encodeURIComponent(sessionId)}`;
 
             // Add skipInstructions parameter if checked
-            console.log(`Skip Instructions: ${skipInstructions}`); // Debugging line
             if (skipInstructions) {
                 targetUrl += `&skipInstructions=true`;
+            }
+            
+            // Add API parameters if they have values
+            if (apiURL) {
+                targetUrl += `&apiURL=${apiURL}`;
+            }
+            if (apiPort) {
+                targetUrl += `&apiPort=${apiPort}`;
+            }
+            if (apiEndpoint) {
+                targetUrl += `&apiEndpoint=${apiEndpoint}`;
+            }
+            if (writeMode) {
+                targetUrl += `&writeMode=${writeMode}`;
             }
 
             // Redirect to index.html
